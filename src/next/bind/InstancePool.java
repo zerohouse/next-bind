@@ -47,7 +47,7 @@ public class InstancePool {
 		return buildFields.get(type) != null ? buildFields.get(type) : instanceMap.get(type);
 	}
 
-	public Set<Object> geInstancesAnnotatedWith(Class<?> type) {
+	public Set<Object> getInstancesAnnotatedWith(Class<?> type) {
 		return annotationMap.get(type);
 	}
 
