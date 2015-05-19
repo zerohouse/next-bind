@@ -1,4 +1,4 @@
-# next-build Library
+# next-bind Library
 
 ##Bind를 통한 Dependency Injection (resources/build.json)
 

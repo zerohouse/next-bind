@@ -9,8 +9,12 @@ import next.bind.annotation.Produces;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProducedInstances {
+
+	private static final Logger logger = LoggerFactory.getLogger(ProducedInstances.class);
 
 	public ProducedInstances(String basePackage) {
 		Map<Class<?>, Object> instances = new HashMap<Class<?>, Object>();
@@ -34,9 +38,11 @@ public class ProducedInstances {
 
 	private void put(Class<?> type, String id, Object produced) {
 		if ("".equals(id)) {
+			logger.info("typeMap : %s -> %s", id, produced);
 			typeMap.put(type, produced);
 			return;
 		}
+		logger.info("idMap : %s -> %s", id, produced);
 		idMap.put(id, produced);
 	}
 
