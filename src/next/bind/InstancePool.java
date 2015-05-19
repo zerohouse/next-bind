@@ -31,7 +31,7 @@ public class InstancePool {
 	private Map<Class<?>, Set<Object>> annotationMap;
 
 	private String basePackage;
-	private BindFields pi;
+	private BindFields buildFields;
 
 	public InstancePool(String basePackage) {
 		methodLevelAnnotation = new HashSet<Class<?>>();
@@ -44,10 +44,10 @@ public class InstancePool {
 	}
 
 	public Object getInstance(Class<?> type) {
-		return instanceMap.get(type);
+		return buildFields.get(type) != null ? buildFields.get(type) : instanceMap.get(type);
 	}
 
-	public Set<Object> getAnnotatedInstance(Class<?> type) {
+	public Set<Object> getAnnotatedInstances(Class<?> type) {
 		return annotationMap.get(type);
 	}
 
@@ -57,6 +57,10 @@ public class InstancePool {
 
 	public Object getInstance(Field field) {
 		return instanceMap.get(field.getDeclaringClass());
+	}
+
+	public Object getInstance(String id) {
+		return buildFields.get(id);
 	}
 
 	public void addClasses(Class<?>... classes) {
@@ -87,7 +91,7 @@ public class InstancePool {
 	public void build() {
 		Reflections ref = new Reflections(basePackage, new SubTypesScanner(), new TypeAnnotationsScanner(), new FieldAnnotationsScanner(),
 				new MethodAnnotationsScanner());
-		pi = new BindFields(ref);
+		buildFields = new BindFields(ref);
 		classLevelAnnotation.forEach(annotation -> {
 			annotationMap.put(annotation, new HashSet<Object>());
 			ref.getTypesAnnotatedWith((Class<? extends Annotation>) annotation).forEach(type -> {
@@ -125,7 +129,7 @@ public class InstancePool {
 		logger.info("\n");
 		logger.info(String.format("%s 인스턴스를 생성합니다. ", type.getSimpleName()));
 		Object obj = MakeInstance.make(type);
-		pi.bindFields(type, obj);
+		buildFields.bindFields(type, obj);
 		instanceMap.put(type, obj);
 		return obj;
 	}

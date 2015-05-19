@@ -102,4 +102,12 @@ public class BindFields {
 		}
 	}
 
+	public Object get(String id) {
+		return idMap.get(id);
+	}
+
+	public Object get(Class<?> type) {
+		return typeMap.get(type);
+	}
+
 }
