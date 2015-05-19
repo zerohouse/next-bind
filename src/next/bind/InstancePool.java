@@ -13,25 +13,31 @@ import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class InstancePool {
 
+	private static final Logger logger = LoggerFactory.getLogger(InstancePool.class);
+
 	private Map<Class<?>, Object> instanceMap;
 
-	private Set<Class<?>> methodLevel;
-	private Set<Class<?>> classLevel;
-	private Set<Class<?>> fieldLevel;
+	private Set<Class<?>> methodLevelAnnotation;
+	private Set<Class<?>> classLevelAnnotation;
+	private Set<Class<?>> fieldLevelAnnotation;
+
+	private Set<Class<?>> classes;
 
 	private Map<Class<?>, Set<Object>> annotationMap;
 
 	private String basePackage;
-	private ProducedInstances pi;
+	private BindFields pi;
 
 	public InstancePool(String basePackage) {
-		pi = new ProducedInstances(basePackage);
-		methodLevel = new HashSet<Class<?>>();
-		classLevel = new HashSet<Class<?>>();
-		fieldLevel = new HashSet<Class<?>>();
+		methodLevelAnnotation = new HashSet<Class<?>>();
+		classLevelAnnotation = new HashSet<Class<?>>();
+		fieldLevelAnnotation = new HashSet<Class<?>>();
+		classes = new HashSet<Class<?>>();
 		this.basePackage = basePackage;
 		instanceMap = new ConcurrentHashMap<Class<?>, Object>();
 		annotationMap = new ConcurrentHashMap<Class<?>, Set<Object>>();
@@ -53,21 +59,27 @@ public class InstancePool {
 		return instanceMap.get(field.getDeclaringClass());
 	}
 
+	public void addClasses(Class<?>... classes) {
+		for (int i = 0; i < classes.length; i++) {
+			this.classes.add(classes[i]);
+		}
+	}
+
 	public void addMethodAnnotations(Class<?>... classes) {
 		for (int i = 0; i < classes.length; i++) {
-			methodLevel.add(classes[i]);
+			methodLevelAnnotation.add(classes[i]);
 		}
 	}
 
 	public void addClassAnnotations(Class<?>... classes) {
 		for (int i = 0; i < classes.length; i++) {
-			classLevel.add(classes[i]);
+			classLevelAnnotation.add(classes[i]);
 		}
 	}
 
 	public void addFieldAnnotations(Class<?>... classes) {
 		for (int i = 0; i < classes.length; i++) {
-			fieldLevel.add(classes[i]);
+			fieldLevelAnnotation.add(classes[i]);
 		}
 	}
 
@@ -75,36 +87,47 @@ public class InstancePool {
 	public void build() {
 		Reflections ref = new Reflections(basePackage, new SubTypesScanner(), new TypeAnnotationsScanner(), new FieldAnnotationsScanner(),
 				new MethodAnnotationsScanner());
-		classLevel.forEach(annotation -> {
+		pi = new BindFields(ref);
+		classLevelAnnotation.forEach(annotation -> {
 			annotationMap.put(annotation, new HashSet<Object>());
 			ref.getTypesAnnotatedWith((Class<? extends Annotation>) annotation).forEach(type -> {
-				Object obj = MakeInstance.make(type);
-				pi.bindFields(type, obj);
-				instanceMap.put(type, obj);
-				annotationMap.get(annotation).add(obj);
+				make(annotation, type);
 			});
 		});
-		methodLevel.forEach(annotation -> {
+		methodLevelAnnotation.forEach(annotation -> {
 			annotationMap.put(annotation, new HashSet<Object>());
 			ref.getMethodsAnnotatedWith((Class<? extends Annotation>) annotation).forEach(method -> {
 				Class<?> type = method.getDeclaringClass();
-				Object obj = MakeInstance.make(type);
-				pi.bindFields(type, obj);
-				instanceMap.put(type, obj);
-				annotationMap.get(annotation).add(obj);
+				make(annotation, type);
 			});
 		});
-		fieldLevel.forEach(annotation -> {
+		fieldLevelAnnotation.forEach(annotation -> {
 			annotationMap.put(annotation, new HashSet<Object>());
 			ref.getFieldsAnnotatedWith((Class<? extends Annotation>) annotation).forEach(method -> {
 				Class<?> type = method.getDeclaringClass();
-				Object obj = MakeInstance.make(type);
-				pi.bindFields(type, obj);
-				instanceMap.put(type, obj);
-				annotationMap.get(annotation).add(obj);
+				make(annotation, type);
 			});
+		});
+		classes.forEach(type -> {
+			make(type);
 		});
 	}
 
-	
+	private void make(Class<?> annotation, Class<?> type) {
+		Object obj = make(type);
+		if (obj != null)
+			annotationMap.get(annotation).add(obj);
+	}
+
+	private Object make(Class<?> type) {
+		if (instanceMap.get(type) != null)
+			return null;
+		logger.info("\n");
+		logger.info(String.format("%s 인스턴스를 생성합니다. ", type.getSimpleName()));
+		Object obj = MakeInstance.make(type);
+		pi.bindFields(type, obj);
+		instanceMap.put(type, obj);
+		return obj;
+	}
+
 }

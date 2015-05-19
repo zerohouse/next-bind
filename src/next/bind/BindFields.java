@@ -8,20 +8,27 @@ import next.bind.annotation.Bind;
 import next.bind.annotation.Produces;
 
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProducedInstances {
+public class BindFields {
 
-	private static final Logger logger = LoggerFactory.getLogger(ProducedInstances.class);
+	private static final Logger logger = LoggerFactory.getLogger(BindFields.class);
 
-	public ProducedInstances(String basePackage) {
+	public BindFields(Reflections ref) {
+		idMap = new HashMap<String, Object>();
+		typeMap = new HashMap<Class<?>, Object>();
+		makeProduces(ref);
+	}
+
+	private void makeProduces(Reflections ref) {
 		Map<Class<?>, Object> instances = new HashMap<Class<?>, Object>();
-		Reflections ref = new Reflections(basePackage, new MethodAnnotationsScanner());
 		ref.getMethodsAnnotatedWith(Produces.class).forEach(method -> {
 			Class<?> declaring = method.getDeclaringClass();
+			method.setAccessible(true);
 			Object obj = instances.get(declaring);
+			logger.info("\n");
+			logger.info(String.format("Produces %s", method.getName()));
 			if (obj == null) {
 				obj = MakeInstance.make(declaring);
 				instances.put(declaring, obj);
@@ -38,11 +45,11 @@ public class ProducedInstances {
 
 	private void put(Class<?> type, String id, Object produced) {
 		if ("".equals(id)) {
-			logger.info("typeMap : %s -> %s", id, produced);
+			logger.info(String.format("Class %s -> %s", type.getSimpleName(), produced));
 			typeMap.put(type, produced);
 			return;
 		}
-		logger.info("idMap : %s -> %s", id, produced);
+		logger.info(String.format("ID %s -> %s", id, produced));
 		idMap.put(id, produced);
 	}
 
@@ -58,8 +65,7 @@ public class ProducedInstances {
 			bindFields(returned.getClass(), returned);
 			put(returned.getClass(), id, returned);
 		}
-
-		return null;
+		return returned;
 	}
 
 	private Object get(Class<?> type, String id) {
@@ -85,9 +91,14 @@ public class ProducedInstances {
 
 	private void setFields(Object obj, Field field) {
 		field.setAccessible(true);
+		Object bind = get(field);
 		try {
-			field.set(obj, get(field));
+			if (field.get(obj) != null)
+				return;
+			logger.info(String.format("%s.%s -> %s", field.getDeclaringClass().getSimpleName(), field.getName(), bind));
+			field.set(obj, bind);
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
