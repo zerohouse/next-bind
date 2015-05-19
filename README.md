@@ -46,6 +46,7 @@ pom.xml에 아래의 레파지토리와 Dependency설정을 추가합니다.
     instancePool.getInstance(field);
     instancePool.getInstance(Method);
     instancePool.getInstance(id);
+    instancePool.getInstancesAnnotatedWith(Annotation);
     
     
 ### 3. ID가 있을경우 ID로 매칭, ID가 없을경우 Class로 매칭.
