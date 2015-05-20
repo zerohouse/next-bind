@@ -45,6 +45,10 @@ public class InstancePool {
 	public void put(Class<?> type, Object obj) {
 		instanceMap.put(type, obj);
 	}
+	
+	public void putMakeEmpty(Class<?> type) {
+		instanceMap.put(type, MakeInstance.make(type));
+	}
 
 	public Object getInstance(Class<?> type) {
 		return buildFields.get(type) != null ? buildFields.get(type) : instanceMap.get(type);
