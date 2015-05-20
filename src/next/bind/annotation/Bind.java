@@ -12,5 +12,5 @@ public @interface Bind {
 	String value() default "";
 
 	Class<?> implementedBy() default Object.class;
-
+	
 }

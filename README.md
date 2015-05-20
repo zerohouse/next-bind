@@ -50,4 +50,4 @@ pom.xml에 아래의 레파지토리와 Dependency설정을 추가합니다.
     
     
 ### 3. ID가 있을경우 ID로 매칭, ID가 없을경우 Class로 매칭.
-### 4. Produces하지 않았을 경우 EmptyInstance Bind
+### 4. Produces하지 않았을 경우 EmptyInstance Auto Create & Bind
