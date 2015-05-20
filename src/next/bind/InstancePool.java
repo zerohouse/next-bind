@@ -21,14 +21,13 @@ public class InstancePool {
 	private static final Logger logger = LoggerFactory.getLogger(InstancePool.class);
 
 	private Map<Class<?>, Object> instanceMap;
+	private Map<Class<?>, Set<Object>> annotationMap;
 
 	private Set<Class<?>> methodLevelAnnotation;
 	private Set<Class<?>> classLevelAnnotation;
 	private Set<Class<?>> fieldLevelAnnotation;
 
 	private Set<Class<?>> classes;
-
-	private Map<Class<?>, Set<Object>> annotationMap;
 
 	private String basePackage;
 	private BindFields buildFields;
@@ -41,6 +40,10 @@ public class InstancePool {
 		this.basePackage = basePackage;
 		instanceMap = new ConcurrentHashMap<Class<?>, Object>();
 		annotationMap = new ConcurrentHashMap<Class<?>, Set<Object>>();
+	}
+
+	public void put(Class<?> type, Object obj) {
+		instanceMap.put(type, obj);
 	}
 
 	public Object getInstance(Class<?> type) {
