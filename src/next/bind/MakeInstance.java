@@ -1,5 +1,6 @@
 package next.bind;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,19 +9,20 @@ public class MakeInstance {
 	@SuppressWarnings("unchecked")
 	public static <T> T make(Class<T> type) {
 		List<Object> params = new ArrayList<Object>();
-		if (type.getConstructors().length == 0)
+		Constructor<?>[] constructors = type.getConstructors();
+		if (constructors.length == 0)
 			return null;
-		Class<?>[] paramTypes = type.getConstructors()[0].getParameterTypes();
-		if (paramTypes.length == 0)
-			try {
-				return type.getConstructor().newInstance();
-			} catch (Exception e) {
-				e.printStackTrace();
+		for (int i = 0; i < constructors.length; i++)
+			if (constructors[i].getParameterTypes().length == 0) {
+				try {
+					return (T) constructors[i].newInstance();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
-		Object obj = null;
+		Class<?>[] paramTypes = constructors[0].getParameterTypes();
 		for (int i = 0; i < paramTypes.length; i++) {
-			obj = getDefaultValue(paramTypes[i]);
-			params.add(obj);
+			params.add(getDefaultValue(paramTypes[i]));
 		}
 		try {
 			return (T) type.getConstructors()[0].newInstance(params.toArray());
