@@ -57,11 +57,13 @@ public class BindFields {
 	private Map<String, Object> idMap;
 
 	public Object get(Field field) {
-		String id = field.getAnnotation(Bind.class).value();
+		Bind bind = field.getAnnotation(Bind.class);
+		String id = bind.value();
+		Class<?> type = bind.implementedBy().equals(Object.class) ? field.getType() : bind.implementedBy();
 		Object returned;
-		returned = get(field.getType(), id);
+		returned = get(type, id);
 		if (returned == null) {
-			returned = MakeInstance.make(field.getType());
+			returned = MakeInstance.make(type);
 			bindFields(returned.getClass(), returned);
 			put(returned.getClass(), id, returned);
 		}
