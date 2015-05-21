@@ -9,13 +9,6 @@
 		<github.global.server>github</github.global.server>
 	</properties>
 
-	<distributionManagement>
-		<repository>
-			<id>internal.repo</id>
-			<name>Temporary Staging Repository</name>
-			<url>file://${project.build.directory}/mvn-repo</url>
-		</repository>
-	</distributionManagement>
 
 	<dependencies>
 		<dependency>
@@ -92,7 +85,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifestEntries>
-							<Application-Version>0.1</Application-Version>
+							<Application-Version>0.0.1</Application-Version>
 							<Built-By>zerohouse</Built-By>
 						</manifestEntries>
 						<addMavenDescriptor>false</addMavenDescriptor>
@@ -139,7 +132,7 @@
 					<includes>
 						<include>**/*</include>
 					</includes>
-					<repositoryName>next</repositoryName>      <!-- github repo name -->
+					<repositoryName>next-bind</repositoryName>      <!-- github repo name -->
 					<repositoryOwner>zerohouse</repositoryOwner>    <!-- github username -->
 				</configuration>
 				<executions>
