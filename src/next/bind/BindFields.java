@@ -28,7 +28,7 @@ public class BindFields {
 			method.setAccessible(true);
 			Object obj = instances.get(declaring);
 			logger.info("\n");
-			logger.info(String.format("Produces %s", method.getName()));
+			logger.info(String.format("Produces [%s] 인스턴스를 Bind합니다.", method.getName()));
 			if (obj == null) {
 				obj = MakeInstance.make(declaring);
 				instances.put(declaring, obj);
@@ -45,11 +45,11 @@ public class BindFields {
 
 	private void put(Class<?> type, String id, Object produced) {
 		if ("".equals(id)) {
-			logger.info(String.format("Class %s -> %s", type.getSimpleName(), produced));
+			logger.info(String.format("[Bind] Class %s -> %s", type.getSimpleName(), produced));
 			typeMap.put(type, produced);
 			return;
 		}
-		logger.info(String.format("ID %s -> %s", id, produced));
+		logger.info(String.format("[Bind] ID %s -> %s", id, produced));
 		idMap.put(id, produced);
 	}
 
